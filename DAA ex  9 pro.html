@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bin Packing Problem</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    padding:30px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 20px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    color:#283593;
+    margin-bottom:20px;
+}
+
+button{
+    display:block;
+    margin:20px auto;
+    padding:12px 30px;
+    font-size:18px;
+    background:#283593;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#3949ab;
+}
+
+.info{
+    background:#f4f4f4;
+    padding:15px;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+.algorithm{
+    margin-top:30px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    padding:15px;
+}
+
+.algorithm h2{
+    color:#1565c0;
+}
+
+.bin{
+    margin:10px 0;
+    padding:10px;
+    background:#fafafa;
+    border-left:5px solid #1565c0;
+}
+
+.bar{
+    height:20px;
+    background:#ddd;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:8px;
+}
+
+.fill{
+    height:100%;
+    background:#4caf50;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th{
+    background:#283593;
+    color:white;
+    padding:10px;
+}
+
+td{
+    border:1px solid #ccc;
+    text-align:center;
+    padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Bin Packing Algorithms</h1>
+
+<button onclick="runAlgorithms()">Run Algorithms</button>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+const items=[0.5,0.7,0.3,0.9,0.2,0.6,0.8,0.4,0.1,0.5];
+const capacity=1.0;
+
+function firstFit(arr){
+
+    let bins=[];
+    let contents=[];
+
+    arr.forEach(item=>{
+
+        let placed=false;
+
+        for(let i=0;i<bins.length;i++){
+
+            if(bins[i]>=item){
+
+                bins[i]-=item;
+
+                contents[i].push(item);
+
+                placed=true;
+
+                break;
+            }
+        }
+
+        if(!placed){
+
+            bins.push(capacity-item);
+
+            contents.push([item]);
+
+        }
+
+    });
+
+    return contents;
+}
+
+function firstFitDecreasing(arr){
+
+    let sorted=[...arr].sort((a,b)=>b-a);
+
+    return firstFit(sorted);
+
+}
+
+function bestFitDecreasing(arr){
+
+    let sorted=[...arr].sort((a,b)=>b-a);
+
+    let bins=[];
+    let contents=[];
+
+    sorted.forEach(item=>{
+
+        let best=-1;
+
+        let bestSpace=Infinity;
+
+        for(let i=0;i<bins.length;i++){
+
+            if(bins[i]>=item && bins[i]-item<bestSpace){
+
+                bestSpace=bins[i]-item;
+
+                best=i;
+
+            }
+
+        }
+
+        if(best!=-1){
+
+            bins[best]-=item;
+
+            contents[best].push(item);
+
+        }
+        else{
+
+            bins.push(capacity-item);
+
+            contents.push([item]);
+
+        }
+
+    });
+
+    return contents;
+
+}
+
+function showBins(title,bins){
+
+    let html=`<div class="algorithm">
+    <h2>${title} (${bins.length} bins)</h2>`;
+
+    bins.forEach((bin,index)=>{
+
+        let used=bin.reduce((a,b)=>a+b,0);
+
+        let percent=used*100;
+
+        html+=`
+        <div class="bin">
+        <b>Bin ${index+1}</b><br>
+        Items: ${bin.join(", ")}<br>
+        Used: ${used.toFixed(1)}
+        <div class="bar">
+        <div class="fill" style="width:${percent}%"></div>
+        </div>
+        </div>
+        `;
+
+    });
+
+    html+="</div>";
+
+    return html;
+
+}
+
+function runAlgorithms(){
+
+    let lower=Math.ceil(items.reduce((a,b)=>a+b,0));
+
+    let ff=firstFit(items);
+
+    let ffd=firstFitDecreasing(items);
+
+    let bfd=bestFitDecreasing(items);
+
+    let html=`
+    <div class="info">
+    <p><b>Items:</b> ${items.join(", ")}</p>
+    <p><b>Bin Capacity:</b> ${capacity}</p>
+    <p><b>Total Size:</b> ${items.reduce((a,b)=>a+b,0).toFixed(1)}</p>
+    <p><b>Lower Bound:</b> ${lower}</p>
+    </div>
+    `;
+
+    html+=showBins("First Fit (FF)",ff);
+
+    html+=showBins("First Fit Decreasing (FFD)",ffd);
+
+    html+=showBins("Best Fit Decreasing (BFD)",bfd);
+
+    html+=`
+    <table>
+    <tr>
+    <th>Algorithm</th>
+    <th>Bins Used</th>
+    </tr>
+
+    <tr>
+    <td>Lower Bound</td>
+    <td>${lower}</td>
+    </tr>
+
+    <tr>
+    <td>First Fit</td>
+    <td>${ff.length}</td>
+    </tr>
+
+    <tr>
+    <td>First Fit Decreasing</td>
+    <td>${ffd.length}</td>
+    </tr>
+
+    <tr>
+    <td>Best Fit Decreasing</td>
+    <td>${bfd.length}</td>
+    </tr>
+
+    </table>
+    `;
+
+    document.getElementById("output").innerHTML=html;
+
+}
+
+</script>
+
+</body>
+</html>
