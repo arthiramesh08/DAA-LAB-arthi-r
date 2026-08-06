@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix Chain Multiplication</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+}
+
+.container{
+    width:90%;
+    max-width:1100px;
+    margin:30px auto;
+    background:#fff;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 10px 20px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    color:#0d47a1;
+}
+
+button{
+    display:block;
+    margin:20px auto;
+    padding:12px 30px;
+    font-size:18px;
+    background:#0d47a1;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1565c0;
+}
+
+.result{
+    background:#f4f4f4;
+    padding:20px;
+    border-radius:8px;
+    margin-top:20px;
+}
+
+.result p{
+    font-size:18px;
+    margin:8px 0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:25px;
+}
+
+table th{
+    background:#1565c0;
+    color:white;
+    padding:12px;
+}
+
+table td{
+    border:1px solid #ccc;
+    text-align:center;
+    padding:10px;
+}
+
+table tr:nth-child(even){
+    background:#f2f2f2;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>Matrix Chain Multiplication (Dynamic Programming)</h1>
+
+<button onclick="runMCM()">Run Algorithm</button>
+
+<div class="result" id="output"></div>
+
+<table id="dpTable">
+<thead>
+<tr id="headerRow">
+<th></th>
+</tr>
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+function matrixChainOrder(dims){
+
+    let n=dims.length-1;
+
+    let m=[];
+    let s=[];
+
+    for(let i=0;i<=n;i++){
+        m.push(new Array(n+1).fill(0));
+        s.push(new Array(n+1).fill(0));
+    }
+
+    for(let l=2;l<=n;l++){
+
+        for(let i=1;i<=n-l+1;i++){
+
+            let j=i+l-1;
+
+            m[i][j]=Number.MAX_SAFE_INTEGER;
+
+            for(let k=i;k<j;k++){
+
+                let cost=m[i][k]+m[k+1][j]+dims[i-1]*dims[k]*dims[j];
+
+                if(cost<m[i][j]){
+
+                    m[i][j]=cost;
+                    s[i][j]=k;
+
+                }
+
+            }
+
+        }
+
+    }
+
+    return {m,s,n};
+
+}
+
+function printOptimalParens(s,i,j){
+
+    if(i===j)
+        return "A"+i;
+
+    let k=s[i][j];
+
+    return "("+
+            printOptimalParens(s,i,k)
+            +" × "+
+            printOptimalParens(s,k+1,j)
+            +")";
+
+}
+
+function runMCM(){
+
+    let dims=[10,30,5,60,10];
+
+    let result=matrixChainOrder(dims);
+
+    let m=result.m;
+    let s=result.s;
+    let n=result.n;
+
+    let html="<h2>Matrix Dimensions</h2>";
+
+    for(let i=0;i<n;i++){
+
+        html+="<p><b>A"+(i+1)+"</b> : "+dims[i]+" × "+dims[i+1]+"</p>";
+
+    }
+
+    html+="<hr>";
+
+    html+="<p><b>Minimum Scalar Multiplications :</b> "+m[1][n]+"</p>";
+
+    html+="<p><b>Optimal Parenthesization :</b> "+printOptimalParens(s,1,n)+"</p>";
+
+    document.getElementById("output").innerHTML=html;
+
+    let header="<th></th>";
+
+    for(let j=1;j<=n;j++){
+
+        header+="<th>A"+j+"</th>";
+
+    }
+
+    document.getElementById("headerRow").innerHTML=header;
+
+    let body="";
+
+    for(let i=1;i<=n;i++){
+
+        body+="<tr>";
+
+        body+="<th>A"+i+"</th>";
+
+        for(let j=1;j<=n;j++){
+
+            if(j<i)
+
+                body+="<td>---</td>";
+
+            else
+
+                body+="<td>"+m[i][j]+"</td>";
+
+        }
+
+        body+="</tr>";
+
+    }
+
+    document.querySelector("#dpTable tbody").innerHTML=body;
+
+}
+
+</script>
+
+</body>
+</html>
