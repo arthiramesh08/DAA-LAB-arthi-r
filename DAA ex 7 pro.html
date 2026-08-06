@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N-Queens Problem</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#6a11cb,#2575fc);
+    padding:30px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 20px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    color:#1a237e;
+    margin-bottom:20px;
+}
+
+button{
+    display:block;
+    margin:20px auto;
+    padding:12px 30px;
+    border:none;
+    border-radius:8px;
+    background:#1a237e;
+    color:white;
+    font-size:18px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#3949ab;
+}
+
+.result{
+    margin-top:20px;
+}
+
+.board{
+    display:inline-block;
+    margin:20px;
+}
+
+table{
+    border-collapse:collapse;
+}
+
+td{
+    width:45px;
+    height:45px;
+    text-align:center;
+    font-size:26px;
+    border:1px solid #555;
+}
+
+.white{
+    background:#ffffff;
+}
+
+.black{
+    background:#d0d0d0;
+}
+
+.info{
+    background:#f4f4f4;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+}
+
+.info p{
+    margin:8px 0;
+    font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>N-Queens Using Backtracking</h1>
+
+<button onclick="runProgram()">Run Algorithm</button>
+
+<div id="output" class="result"></div>
+
+</div>
+
+<script>
+
+function isSafe(board,row,col){
+
+    for(let prev=0;prev<row;prev++){
+
+        let placed=board[prev];
+
+        if(placed===col)
+            return false;
+
+        if(Math.abs(prev-row)===Math.abs(placed-col))
+            return false;
+    }
+
+    return true;
+}
+
+function solveNQueens(n){
+
+    let board=new Array(n).fill(-1);
+
+    let solutions=[];
+
+    let backtracks=0;
+
+    function backtrack(row){
+
+        if(row===n){
+
+            solutions.push([...board]);
+
+            return;
+        }
+
+        for(let col=0;col<n;col++){
+
+            if(isSafe(board,row,col)){
+
+                board[row]=col;
+
+                backtrack(row+1);
+
+                board[row]=-1;
+
+                backtracks++;
+            }
+        }
+    }
+
+    backtrack(0);
+
+    return{
+        solutions,
+        backtracks
+    };
+}
+
+function createBoard(solution,n){
+
+    let html="<table>";
+
+    for(let i=0;i<n;i++){
+
+        html+="<tr>";
+
+        for(let j=0;j<n;j++){
+
+            let color=((i+j)%2===0)?"white":"black";
+
+            if(solution[i]===j)
+
+                html+=`<td class="${color}">♛</td>`;
+
+            else
+
+                html+=`<td class="${color}"></td>`;
+        }
+
+        html+="</tr>";
+    }
+
+    html+="</table>";
+
+    return html;
+}
+
+function runProgram(){
+
+    let output="";
+
+    let values=[4,6,8];
+
+    values.forEach(n=>{
+
+        let result=solveNQueens(n);
+
+        output+=`
+        <div class="info">
+        <h2>N = ${n}</h2>
+        <p><b>Solutions:</b> ${result.solutions.length}</p>
+        <p><b>Backtracks:</b> ${result.backtracks}</p>
+        </div>
+        `;
+
+        if(n===4){
+
+            output+="<h2 style='margin-top:20px'>All Solutions for 4-Queens</h2>";
+
+            result.solutions.forEach((sol,index)=>{
+
+                output+=`
+                <div class="board">
+                <h3>Solution ${index+1}</h3>
+                ${createBoard(sol,4)}
+                </div>
+                `;
+            });
+        }
+
+    });
+
+    document.getElementById("output").innerHTML=output;
+
+}
+
+</script>
+
+</body>
+</html>
